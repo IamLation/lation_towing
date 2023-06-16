@@ -5,7 +5,7 @@ game 'gta5'
 lua54 'yes'
 
 author 'iamlation'
-description 'A unique take on oxy runs for FiveM'
+description 'A fun & simple towing job for FiveM'
 version '1.0.0'
 
 client_scripts {
