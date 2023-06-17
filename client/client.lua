@@ -111,16 +111,14 @@ function setWaypoint()
     selectCarAndLocation()
     local nearbyVehicles = lib.getClosestVehicle(vec3(selectLoc.x, selectLoc.y, selectLoc.z), 5, false)
     if nearbyVehicles == nil then
-        ESX.Game.SpawnVehicle(selectCar, vector3(selectLoc.x, selectLoc.y, selectLoc.z), selectLoc.h, function(vehicle) 
-            ESX.Game.SetVehicleProperties(vehicle, {
-                bodyHealth = 15,
-                engineHealth = 15,
-                dirtLevel = 10,
-                SetVehicleDoorOpen(vehicle, 4, false, false)
-            })
-            missionVehProperties = ESX.Game.GetVehicleProperties(vehicle)
-            selectCar = vehicle
-        end)
+        lib.requestModel(selectCar)
+        vehicle = CreateVehicle(selectCar, selectLoc.x, selectLoc.y, selectLoc.z, selectLoc.h, true, true)
+        SetVehicleDoorOpen(vehicle, 4, false, false)
+        SetVehicleEngineHealth(vehicle, 200)
+        SetVehicleBodyHealth(vehicle, 200)
+        SetVehicleDirtLevel(vehicle, 12.0)
+        missionVehProperties = ESX.Game.GetVehicleProperties(vehicle)
+        selectCar = vehicle
         SetNewWaypoint(selectLoc.x, selectLoc.y, selectLoc.z)
         jobAssigned = true
         lib.notify({
@@ -139,11 +137,6 @@ function setWaypoint()
             position = Notifications.position
         })
     end
-end
-
--- Function that updates waypoint to delivery location once a car has been loaded
-function deliverVehicle()
-    SetNewWaypoint(Config.DeliverLocation)
 end
 
 -- Function that runs when the job is ended (remove waypoint, delete vehicles, remove keys, etc)
@@ -208,11 +201,11 @@ function attachVehicle()
                             },
                         }) then
                             if targetVehicleProperties.plate == missionVehProperties.plate then
-                                deliverVehicle()
+                                SetNewWaypoint(Config.DeliverLocation)
                             end
                             AttachEntityToEntity(targetVehicle, towVehicle, 20, -0.5, -5.0, 1.0, 0.0, 0.0, 0.0, false, false, false, false, 20, true)
+                            SetVehicleDoorShut(targetVehicle, 4, true)
                             currentlyTowedVehicle = targetVehicle
-                            SetVehicleDoorShut(currentlyTowedVehicle, 4, true)
                             lib.notify({
                                 title = Notifications.title,
                                 description = Notifications.successfulVehicleLoad,
@@ -376,7 +369,7 @@ function openJobMenu()
                     position = Notifications.position
                 })
             end,
-            disabled = enabledCalls and true or false
+            disabled = not inService and true or enabledCalls and true
         },
         {
             title = ContextMenu.clockOutTitle,
