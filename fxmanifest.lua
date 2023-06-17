@@ -6,7 +6,7 @@ lua54 'yes'
 
 author 'iamlation'
 description 'A fun & simple towing job for FiveM'
-version '1.0.0'
+version '1.0.1'
 
 client_scripts {
     'client/*.lua',
