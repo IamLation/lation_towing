@@ -158,7 +158,7 @@ CreateThread(function()
         Wait(2000)
         if enabledCalls then -- checks if "clocked in"
             if inService and not jobAssigned then -- if spawned truck, "clocked in" and no job assigned then assign job
-                local jobCall = math.random(10000, 20000)
+                local jobCall = math.random(Config.MinWaitTime * 60000, Config.MaxWaitTime * 60000)
                 Wait(jobCall)
                 setWaypoint()
             elseif inService and jobAssigned then -- if spawned truck, "clocked in" and has job then wait
