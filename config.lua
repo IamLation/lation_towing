@@ -1,6 +1,9 @@
 Config = {}
 
 --[[ General Configs ]]
+Config.Framework = 'standalone' -- 'esx', 'qbcore' or 'standalone'
+Config.JobLock = false -- Do you want this to be only for players with a specific job? (True if yes, false if no. You must set framework to 'esx' or 'qbcore' for this feature)
+Config.JobName = 'mechanic' -- The job name required if Config.JobLock is true
 Config.StartJobPedModel = 'a_m_m_business_01' -- The model of the ped that starts the job
 Config.StartJobLocation = vec3(1242.0847, -3257.0403, 5.0288) -- The location at which you start the job (and the map blip location)
 Config.DeliverLocation = vec3(393.0399, -1617.5004, 29.2920) -- The location at which you deliver vehicles
@@ -9,7 +12,7 @@ Config.StartJobRadius = 50 -- The distance at which once a player is within the 
 Config.StartJobPedHeading = 272.1205 -- The direction at which the start job ped is facing
 Config.SpawnTruckLocation = vector3(1247.0011, -3262.6636, 5.8075) -- The location at which the tow truck spawns to start the job
 Config.SpawnTruckHeading = 269.8075 -- The direction the tow truck being spawned is facing
-Config.EnableCarKeys = true -- If true, you have to configure your car keys export(s) in client.lua line 55 & 140
+Config.EnableCarKeys = false -- This is for ESX/Standalone only, QBCore key system already works even when set to false
 Config.MinWaitTime = 1 -- The minimum wait time in minutes for a new job assignment
 Config.MaxWaitTime = 2 -- The maximum wait time in minutes for a new job assignment
 
@@ -20,11 +23,26 @@ Config.RandomPayPerDelivery = true -- Set true if you want randomized pay, set f
 Config.MinPayPerDelivery = 350 -- If Config.RandomPayPerDelivery = true then what is the minimum pay? (If RandomPay false, ignore this)
 Config.MaxPayPerDelivery = 950 -- If Config.RandomPayPerDelivery = true then what is the maxmimum pay? (If RandomPay false, ignore this)
 
---[[ Blip Configs ]]
-Config.BlipSprite = 477 -- https://docs.fivem.net/docs/game-references/blips/
-Config.BlipColor = 21 -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
-Config.BlipScale = 0.7 
-Config.BlipName = 'Towing'
+Config.Blips = {
+    startJob = {
+        blipSprite = 477, -- https://docs.fivem.net/docs/game-references/blips/
+        blipColor = 21, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+        blipScale = 0.7,
+        blipName = 'Towing'
+    },
+    pickupVehicle = {
+        blipSprite = 380,
+        blipColor = 1,
+        blipScale = 0.7,
+        blipName = 'Target Vehicle'
+    },
+    dropOff = {
+        blipSprite = 68,
+        blipColor = 2,
+        blipScale = 0.7,
+        blipName = 'Target Drop Off'
+    }
+}
 
 --[[ Car Spawns - Must Follow Format ]]
 Config.Locations = {
@@ -62,6 +80,7 @@ Notifications = {
     position = 'top', -- The position of all notifications
     icon = 'truck-ramp-box', -- The icon displayed for all notifications
     title = 'Tow Truck', -- The title for all notifications
+    notAuthorized = 'You are not authorized to perform this job - you must be a ' ..Config.JobName,
     successfulVehicleLoad = 'You have successfully loaded the vehicle onto the Tow Truck',
     cancelledVehicleLoad = 'You cancelled loading the vehicle',
     notCloseEnough = 'You are not close enough to the vehicle you are trying to tow',

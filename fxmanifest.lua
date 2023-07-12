@@ -5,8 +5,8 @@ game 'gta5'
 lua54 'yes'
 
 author 'iamlation'
-description 'A fun & simple towing job for FiveM'
-version '1.0.1'
+description 'A fun & simple standalone towing job for FiveM'
+version '1.0.2'
 
 client_scripts {
     'client/*.lua',
@@ -18,6 +18,5 @@ server_scripts {
 
 shared_scripts {
     'config.lua',
-    '@es_extended/imports.lua',
     '@ox_lib/init.lua'
 }

@@ -1,0 +1,20 @@
+{
+    "Lua.diagnostics.globals": [
+        "lib",
+        "ESX",
+        "createBlip",
+        "spawnTowTruck",
+        "startNextJob",
+        "selectCarAndLocation",
+        "setWaypoint",
+        "vehicle",
+        "missionVehProperties",
+        "endJob",
+        "attachVehicle",
+        "cache",
+        "detachVehicle",
+        "openJobMenu",
+        "spawnTowJobNPC",
+        "AddTextComponentString"
+    ]
+}

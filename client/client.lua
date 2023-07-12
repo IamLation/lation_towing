@@ -1,8 +1,8 @@
 -- Stuff
 local ox_target = exports.ox_target
 local towJobStartLocation = lib.points.new(Config.StartJobLocation, Config.StartJobRadius)
-local towJobDeliverLocation = lib.points.new(Config.DeliverLocation, Config.DeliverRadius)
-local targetVehicle = nil
+local targetVehicle, currentlyTowedVehicle, towVehicle, inService, spawnedVehicle, spawnedVehiclePlate, jobAssigned, enabledCalls, car, location, targetCarBlip, dropOffBlip
+--[[ local targetVehicle = nil
 local currentlyTowedVehicle = nil
 local towVehicle = nil
 local inService = nil
@@ -14,59 +14,47 @@ local randomCar = nil
 local selectCar = nil
 local jobAssigned = false
 local enabledCalls = false
-local jobMenu = nil
-local towRequest = nil
+local car = nil
+local location = nil ]]
 
--- Blip stuff
-CreateThread(function()
-    while true do
-        local sleep = 1000
-        local isLoaded = ESX.IsPlayerLoaded()
-        if isLoaded then
-            createBlip()
-            break
-        end
-        Wait(sleep)
-    end
-end)
-
--- Function to create the blip
-function createBlip()
-    local blip = AddBlipForCoord(Config.StartJobLocation)
-    SetBlipSprite(blip, Config.BlipSprite)
-    SetBlipDisplay(blip, 4)
-    SetBlipColour(blip, Config.BlipColor)
-    SetBlipScale(blip, Config.BlipScale)
-    SetBlipAsShortRange(blip, true)
-    BeginTextCommandSetBlipName("STRING")
-    AddTextComponentString(Config.BlipName)
-    EndTextCommandSetBlipName(blip)
-end
+local blip = AddBlipForCoord(Config.StartJobLocation)
+SetBlipSprite(blip, Config.Blips.startJob.blipSprite)
+SetBlipDisplay(blip, 4)
+SetBlipColour(blip, Config.Blips.startJob.blipColor)
+SetBlipScale(blip, Config.Blips.startJob.blipScale)
+SetBlipAsShortRange(blip, true)
+BeginTextCommandSetBlipName("STRING")
+AddTextComponentString(Config.Blips.startJob.blipName)
+EndTextCommandSetBlipName(blip)
 
 -- On player death set variables to proper values
-AddEventHandler('esx:onPlayerDeath', function(data)
+-- Needed?
+--[[ AddEventHandler('esx:onPlayerDeath', function(data)
     if inService then
         inService = false
         enabledCalls = false
         jobAssigned = false
         DeleteWaypoint()
     end
-end)
+end) ]]
 
 -- Function that spawns the tow truck at the job start location
 function spawnTowTruck()
     local nearbyVehicles = lib.getClosestVehicle(Config.SpawnTruckLocation, 3, false)
     if nearbyVehicles == nil then
-        ESX.Game.SpawnVehicle('flatbed', Config.SpawnTruckLocation, Config.SpawnTruckHeading, function(vehicle)
-            Entity(vehicle).state.fuel = 100.0
-            local vehicleProperties = ESX.Game.GetVehicleProperties(vehicle)
-            if Config.EnableCarKeys then
-                spawnedVehiclePlate = vehicleProperties.plate
-                -- Example: exports.wasabi_carlock:GiveKeys(vehicleProperties.plate, false)
-                -- Insert give car keys export here
-            end
-            spawnedVehicle = vehicle
-        end)
+        lib.requestModel('flatbed')
+        vehicle = CreateVehicle('flatbed', Config.SpawnTruckLocation, Config.SpawnTruckHeading, true, true)
+        Entity(vehicle).state.fuel = 100.0
+        local truckPlate = GetVehicleNumberPlateText(vehicle)
+        if Config.Framework == 'qbcore' then
+            TriggerEvent('qb-vehiclekeys:client:AddKeys', truckPlate)
+        end
+        if Config.EnableCarKeys then
+            spawnedVehiclePlate = truckPlate
+            -- Example: exports.wasabi_carlock:GiveKeys(spawnedVehiclePlate, false)
+            -- Insert give car keys export here
+        end
+        spawnedVehicle = vehicle
         inService = true
     else
         lib.notify({
@@ -100,26 +88,37 @@ end
 
 -- Function that selects a random car & spawn location from the Config
 function selectCarAndLocation()
-    randomLoc = math.random(1, #Config.Locations)
-    selectLoc = Config.Locations[randomLoc]
-    randomCar = math.random(1, #Config.CarModels)
-    selectCar = Config.CarModels[randomCar]
+    local randomLoc = math.random(1, #Config.Locations)
+    local selectLoc = Config.Locations[randomLoc]
+    local randomCar = math.random(1, #Config.CarModels)
+    local selectCar = Config.CarModels[randomCar]
+    return selectCar, selectLoc
 end
 
 -- Function that spawns the vehicle and sets the waypoint when job is selected
 function setWaypoint()
-    selectCarAndLocation()
-    local nearbyVehicles = lib.getClosestVehicle(vec3(selectLoc.x, selectLoc.y, selectLoc.z), 5, false)
+    car, location = selectCarAndLocation()
+    local nearbyVehicles = lib.getClosestVehicle(vec3(location.x, location.y, location.z), 5, false)
     if nearbyVehicles == nil then
-        lib.requestModel(selectCar)
-        vehicle = CreateVehicle(selectCar, selectLoc.x, selectLoc.y, selectLoc.z, selectLoc.h, true, true)
+        lib.requestModel(car)
+        vehicle = CreateVehicle(car, location.x, location.y, location.z, location.h, true, true)
         SetVehicleDoorOpen(vehicle, 4, false, false)
         SetVehicleEngineHealth(vehicle, 200)
         SetVehicleBodyHealth(vehicle, 200)
         SetVehicleDirtLevel(vehicle, 12.0)
-        missionVehProperties = ESX.Game.GetVehicleProperties(vehicle)
-        selectCar = vehicle
-        SetNewWaypoint(selectLoc.x, selectLoc.y, selectLoc.z)
+        missionVehPlate = GetVehicleNumberPlateText(vehicle)
+        car = vehicle
+        -- Set waypoint & create blip
+        SetNewWaypoint(location.x, location.y)
+        targetCarBlip = AddBlipForCoord(location.x, location.y, location.z)
+        SetBlipSprite(targetCarBlip, Config.Blips.pickupVehicle.blipSprite)
+        SetBlipDisplay(targetCarBlip, 4)
+        SetBlipColour(targetCarBlip, Config.Blips.pickupVehicle.blipColor)
+        SetBlipScale(targetCarBlip, Config.Blips.pickupVehicle.blipScale)
+        SetBlipAsShortRange(targetCarBlip, true)
+        BeginTextCommandSetBlipName("STRING")
+        AddTextComponentString(Config.Blips.pickupVehicle.blipName)
+        EndTextCommandSetBlipName(targetCarBlip)
         jobAssigned = true
         lib.notify({
             title = Notifications.title,
@@ -142,8 +141,8 @@ end
 -- Function that runs when the job is ended (remove waypoint, delete vehicles, remove keys, etc)
 function endJob()
     DeleteWaypoint()
-    ESX.Game.DeleteVehicle(spawnedVehicle)
-    ESX.Game.DeleteVehicle(selectCar)
+    DeleteEntity(spawnedVehicle)
+    DeleteEntity(car)
     if Config.EnableCarKeys then
         -- Example: exports.wasabi_carlock:RemoveKeys(spawnedVehiclePlate, false)
         -- Insert remove car keys export here
@@ -159,7 +158,7 @@ CreateThread(function()
         Wait(2000)
         if enabledCalls then -- checks if "clocked in"
             if inService and not jobAssigned then -- if spawned truck, "clocked in" and no job assigned then assign job
-                local jobCall = math.random(Config.MinWaitTime * 60000, Config.MaxWaitTime * 60000)
+                local jobCall = math.random(10000, 20000)
                 Wait(jobCall)
                 setWaypoint()
             elseif inService and jobAssigned then -- if spawned truck, "clocked in" and has job then wait
@@ -179,10 +178,10 @@ function attachVehicle()
     local ped = GetEntityCoords(cache.ped)
     if isVehicleTowTruck then
         targetVehicle = lib.getClosestVehicle(ped, 5, false)
-        targetVehicleProperties = ESX.Game.GetVehicleProperties(targetVehicle)
+        targetVehiclePlate = GetVehicleNumberPlateText(targetVehicle)
         if currentlyTowedVehicle == nil then
             if targetVehicle ~= 0 then
-                if not IsPedInAnyVehicle(playerPed, true) then
+                if not IsPedInAnyVehicle(cache.ped, true) then
                     if towVehicle ~= targetVehicle then
                         if lib.progressCircle({
                             label = ProgressCircle.loadVehicleLabel,
@@ -200,12 +199,22 @@ function attachVehicle()
                                 clip = 'buzz_reg' -- or struggle_loop_b_thief
                             },
                         }) then
-                            if targetVehicleProperties.plate == missionVehProperties.plate then
-                                SetNewWaypoint(Config.DeliverLocation)
-                            end
                             AttachEntityToEntity(targetVehicle, towVehicle, 20, -0.5, -5.0, 1.0, 0.0, 0.0, 0.0, false, false, false, false, 20, true)
-                            SetVehicleDoorShut(targetVehicle, 4, true)
                             currentlyTowedVehicle = targetVehicle
+                            if targetVehiclePlate == missionVehPlate then
+                                RemoveBlip(targetCarBlip)
+                                SetVehicleDoorShut(targetVehicle, 4, true)
+                                SetNewWaypoint(Config.DeliverLocation.x, Config.DeliverLocation.y)
+                                dropOffBlip = AddBlipForCoord(Config.DeliverLocation.x, Config.DeliverLocation.y, Config.DeliverLocation.z)
+                                SetBlipSprite(dropOffBlip, Config.Blips.dropOff.blipSprite)
+                                SetBlipDisplay(dropOffBlip, 4)
+                                SetBlipColour(dropOffBlip, Config.Blips.dropOff.blipColor)
+                                SetBlipScale(dropOffBlip, Config.Blips.dropOff.blipScale)
+                                SetBlipAsShortRange(dropOffBlip, true)
+                                BeginTextCommandSetBlipName("STRING")
+                                AddTextComponentString(Config.Blips.dropOff.blipName)
+                                EndTextCommandSetBlipName(dropOffBlip)
+                            end
                             lib.notify({
                                 title = Notifications.title,
                                 description = Notifications.successfulVehicleLoad,
@@ -247,7 +256,7 @@ end
 
 -- Function that removes the towed vehicle from the tow truck
 function detachVehicle()
-    if currentlyTowedVehicle == nil then 
+    if currentlyTowedVehicle == nil then
         return lib.notify({ id = 'noVehicleToUnload', title = Notifications.title, description = Notifications.noVehicleToUnload, icon = Notifications.icon, type = 'warning', position = Notifications.position })
     end
     if lib.progressCircle({
@@ -269,13 +278,16 @@ function detachVehicle()
         AttachEntityToEntity(currentlyTowedVehicle, towVehicle, 20, -0.5, -12.0, 1.0, 0.0, 0.0, 0.0, false, false, false, false, 20, true)
         DetachEntity(currentlyTowedVehicle, true, true)
         if inService then
-            if targetVehicleProperties.plate == missionVehProperties.plate then
-                local pedCoords = GetEntityCoords(cache.ped)
-                if GetDistanceBetweenCoords(pedCoords, Config.DeliverLocation, true) < Config.DeliverRadius then
+            if targetVehiclePlate == missionVehPlate then
+                local verifyLocation = lib.callback.await('lation_towtruck:checkDistance', false)
+                if verifyLocation then
+                    RemoveBlip(dropOffBlip)
                     DeleteEntity(currentlyTowedVehicle)
-                    lib.callback.await('lation_towtruck:payPlayer')
-                    startNextJob()
-                    jobAssigned = false
+                    local success = lib.callback.await('lation_towtruck:payPlayer')
+                    if success then
+                        startNextJob()
+                        jobAssigned = false
+                    end
                 else
                     lib.notify({
                         title = Notifications.title,
@@ -295,7 +307,7 @@ function detachVehicle()
                 icon = Notifications.icon,
                 position = Notifications.position
             })
-        currentlyTowedVehicle = nil
+            currentlyTowedVehicle = nil
         end
     else
         lib.notify({
@@ -389,7 +401,22 @@ function openJobMenu()
         title = ContextMenu.menuTitle,
         options = jobMenu
     })
-    lib.showContext('towJobStartMenu')
+    if Config.JobLock then
+        local jobCheck = lib.callback.await('lation_towtruck:checkJob', false)
+        if jobCheck then
+            lib.showContext('towJobStartMenu')
+        else
+            lib.notify({
+                title = Notifications.title,
+                description = Notifications.notAuthorized,
+                icon = Notifications.icon,
+                type = 'error',
+                position = Notifications.position
+            })
+        end
+    else
+        lib.showContext('towJobStartMenu')
+    end
 end
 
 -- Applies the target options above to the flatbed model
