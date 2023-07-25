@@ -2,7 +2,7 @@ Config = {}
 
 --[[ General Configs ]]
 Config.Framework = 'standalone' -- 'esx', 'qbcore' or 'standalone'
-Config.JobLock = false -- Do you want this to be only for players with a specific job? (True if yes, false if no. You must set framework to 'esx' or 'qbcore' for this feature)
+Config.RequireJob = false -- Do you want this to be only for players with a specific job? (True if yes, false if no. You must set framework to 'esx' or 'qbcore' for this feature)
 Config.JobName = 'mechanic' -- The job name required if Config.JobLock is true
 Config.StartJobPedModel = 'a_m_m_business_01' -- The model of the ped that starts the job
 Config.StartJobLocation = vec3(1242.0847, -3257.0403, 5.0288) -- The location at which you start the job (and the map blip location)
