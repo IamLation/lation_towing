@@ -15,6 +15,7 @@
         "detachVehicle",
         "openJobMenu",
         "spawnTowJobNPC",
-        "AddTextComponentString"
+        "AddTextComponentString",
+        "targetVehiclePlate"
     ]
 }

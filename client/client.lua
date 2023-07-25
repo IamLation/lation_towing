@@ -1,21 +1,8 @@
 -- Stuff
-local ox_target = exports.ox_target
+local qtarget = exports.qtarget
 local towJobStartLocation = lib.points.new(Config.StartJobLocation, Config.StartJobRadius)
-local targetVehicle, currentlyTowedVehicle, towVehicle, inService, spawnedVehicle, spawnedVehiclePlate, jobAssigned, enabledCalls, car, location, targetCarBlip, dropOffBlip
---[[ local targetVehicle = nil
-local currentlyTowedVehicle = nil
-local towVehicle = nil
-local inService = nil
-local spawnedVehicle = nil
-local spawnedVehiclePlate = nil
-local randomLoc = nil
-local selectLoc = nil
-local randomCar = nil
-local selectCar = nil
-local jobAssigned = false
-local enabledCalls = false
-local car = nil
-local location = nil ]]
+local targetVehicle, currentlyTowedVehicle, towVehicle, inService, spawnedVehicle, spawnedVehiclePlate
+local jobAssigned, enabledCalls, car, location, targetCarBlip, dropOffBlip
 
 local blip = AddBlipForCoord(Config.StartJobLocation)
 SetBlipSprite(blip, Config.Blips.startJob.blipSprite)
@@ -26,17 +13,6 @@ SetBlipAsShortRange(blip, true)
 BeginTextCommandSetBlipName("STRING")
 AddTextComponentString(Config.Blips.startJob.blipName)
 EndTextCommandSetBlipName(blip)
-
--- On player death set variables to proper values
--- Needed?
---[[ AddEventHandler('esx:onPlayerDeath', function(data)
-    if inService then
-        inService = false
-        enabledCalls = false
-        jobAssigned = false
-        DeleteWaypoint()
-    end
-end) ]]
 
 -- Function that spawns the tow truck at the job start location
 function spawnTowTruck()
@@ -420,18 +396,51 @@ function openJobMenu()
 end
 
 -- Applies the target options above to the flatbed model
-ox_target:addModel('flatbed', towTargetOptions)
+qtarget:AddTargetModel('flatbed', {
+    options = {
+        {
+            name = 'loadVehicle',
+            icon = Target.loadVehicleIcon,
+            label = Target.loadVehicle,
+            action = function()
+                attachVehicle()
+            end,
+            distance = Target.distance
+        },
+        {
+            name = 'unloadVehicle',
+            icon = Target.unloadVehicleIcon,
+            label = Target.unloadVehicle,
+            action = function()
+                detachVehicle()
+            end,
+            distance = Target.distance
+        }
+    }
+})
 
 -- Spawns the ped & applies the target to the ped a when player enters the configured radius
 function towJobStartLocation:onEnter()
     spawnTowJobNPC()
-    ox_target:addLocalEntity(createTowJobNPC, startTowJobOptions)
+    qtarget:AddTargetEntity(createTowJobNPC, {
+        options = {
+            {
+                name = 'talkToStart',
+                icon = Target.startJobIcon,
+                label = Target.startJob,
+                action = function()
+                    openJobMenu()
+                end,
+                distance = Target.distance
+            }
+        }
+    })
 end
 
 -- Deletes the ped & target option when a player leaves the configured radius
 function towJobStartLocation:onExit()
     DeleteEntity(createTowJobNPC)
-    ox_target:removeLocalEntity(createTowJobNPC, nil)
+    qtarget:RemoveTargetEntity(createTowJobNPC, nil)
 end
 
 -- Function that handles the actual spawning of the ped, etc
