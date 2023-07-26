@@ -5,8 +5,8 @@ A fun & simple standalone towing job for FiveM. Go to the job start location, ge
 [Click here to join our Discord](https://discord.gg/9EbY4nM5uu)
 
 ## Features
-- Standalone (Provides support for ESX & QBCore for "job lock" feature)
-- Job Lock feature to require a specific job
+- Supports ESX & QBCore
+- Require job feature optional
 - Highly detailed config file
 - 11 pre-configured pickup locations (easily add more)
 - Drive around & get jobs at random intervals
@@ -14,7 +14,7 @@ A fun & simple standalone towing job for FiveM. Go to the job start location, ge
 
 ## Dependencies
 - [ox_lib](https://github.com/overextended/ox_lib/releases)
-- [ox_target](https://github.com/overextended/ox_target/releases)
+- [ox_target](https://github.com/overextended/ox_target/releases), [qb-target](https://github.com/qbcore-framework/qb-target) or [qtarget](https://github.com/overextended/ox_target/releases)
 
 ## Installation
 - Ensure you have all dependencies installed
