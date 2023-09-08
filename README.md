@@ -1,8 +1,9 @@
 # Lation's Towing
 A fun & simple standalone towing job for FiveM. Go to the job start location, get your truck, clock in & you're making money! Drive around and you will be given jobs at random intervals. Put the vehicle on your truck, deliver the vehicle to the impound and get paid! Optional configurations for settings such as a "job lock" to lock the job behind a specific job (feature supported for both ESX & QBCore).
 
-## Support & More
+## Support, Scripts & More
 [Click here to join our Discord](https://discord.gg/9EbY4nM5uu)
+[Click here to visit our Store](https://lationscripts.com/github)
 
 ## Features
 - Supports ESX & QBCore
