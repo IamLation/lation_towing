@@ -3,7 +3,7 @@ A fun & simple standalone towing job for FiveM. Go to the job start location, ge
 
 ## Support, Scripts & More
 - [Click here to join our Discord](https://discord.gg/9EbY4nM5uu)
-- [Click here to visit our Store](https://lationscripts.com/github)
+- [Click here to visit our Store](https://lationscripts.com/?utm_source=github&utm_medium=free-script)
 
 ## Features
 - Supports ESX & QBCore
